@@ -18,13 +18,14 @@ export function authReducer(state = initialAuthState, action: AuthActions): Auth
   switch (action.type) {
 
     case AuthActionTypes.LoginAction :
-      return {
-        loggedIn : true,
-        user : action.payload.user
+      if(action && action.payload && action.payload.user){
+        return {
+          loggedIn : true,
+          user : action.payload.user
+        }
       }
     case AuthActionTypes.LogoutAction :
       return initialAuthState;
-
     default:
       return state;
   }

@@ -6,22 +6,18 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {MatMenuModule} from '@angular/material/menu';
 import {MatIconModule} from '@angular/material/icon';
 
-import {
-    MatListModule,
-    MatSidenavModule, MatToolbarModule,
-} from "@angular/material";
+import {MatListModule, MatSidenavModule, MatToolbarModule,} from "@angular/material";
 import {HttpClientModule} from "@angular/common/http";
 
 import {RouterModule, Routes} from "@angular/router";
 import {AuthModule} from "./auth/auth.module";
-import { StoreModule } from '@ngrx/store';
-import { StoreDevtoolsModule } from '@ngrx/store-devtools';
-import { environment } from '../environments/environment';
-import {RouterStateSerializer, StoreRouterConnectingModule} from "@ngrx/router-store";
-
-import { EffectsModule } from '@ngrx/effects';
-import {reducers, metaReducers} from "./reducers";
+import {StoreModule} from '@ngrx/store';
+import {StoreDevtoolsModule} from '@ngrx/store-devtools';
+import {environment} from '../environments/environment';
+import {metaReducers, reducers} from "./reducers";
 import {AuthGuard} from "./auth/auth.guard";
+import {EffectsModule} from "@ngrx/effects";
+import {StoreRouterConnectingModule} from "@ngrx/router-store";
 
 
 const routes: Routes = [
@@ -54,6 +50,8 @@ const routes: Routes = [
         AuthModule.forRoot(),
         StoreModule.forRoot(reducers, { metaReducers }),
         !environment.production ? StoreDevtoolsModule.instrument() : [],
+        EffectsModule.forRoot([]),
+      StoreRouterConnectingModule.forRoot({stateKey: 'router'})
     ],
     providers: [],
     bootstrap: [AppComponent]
