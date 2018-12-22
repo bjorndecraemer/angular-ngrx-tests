@@ -1,8 +1,17 @@
 import {Injectable} from "@angular/core";
 import {Actions, Effect, ofType} from "@ngrx/effects";
-import {CourseActionTypes, CourseLoaded, CourseRequested} from "./courses.actions";
-import {map, mergeMap} from "rxjs/operators";
+import {
+  AllCoursesLoaded,
+  AllCoursesRequested,
+  CourseActionTypes,
+  CourseLoaded,
+  CourseRequested
+} from "./courses.actions";
+import {filter, map, mergeMap, withLatestFrom} from "rxjs/operators";
 import {CoursesService} from "./services/courses.service";
+import {AppState} from "../reducers";
+import {select, Store} from "@ngrx/store";
+import {allCoursesLoaded} from "./course.selectors";
 
 @Injectable()
 export class CourseEffects {
@@ -14,5 +23,15 @@ export class CourseEffects {
       map(course => new CourseLoaded({course})),
     )
 
-  constructor(private actions$ : Actions, private coursesService : CoursesService){}
+  @Effect()
+  loadAllCourses$ = this.actions$
+    .pipe(
+      ofType<AllCoursesRequested>(CourseActionTypes.AllCoursesRequested),
+      withLatestFrom(this.store.pipe(select(allCoursesLoaded))),
+      filter(([action, allCoursesLoaded]) => !allCoursesLoaded),
+      mergeMap(action => this.coursesService.findAllCourses()),
+      map(courses => new AllCoursesLoaded({courses}))
+    );
+
+  constructor(private actions$ : Actions, private coursesService : CoursesService, private store : Store<AppState>){}
 }
