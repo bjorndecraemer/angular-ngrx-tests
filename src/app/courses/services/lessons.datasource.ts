@@ -1,49 +1,46 @@
-
-
-
 import {CollectionViewer, DataSource} from "@angular/cdk/collections";
-import {Observable, BehaviorSubject, of} from "rxjs";
+import {BehaviorSubject, Observable, of} from "rxjs";
 import {Lesson} from "../model/lesson";
-import {CoursesService} from "./courses.service";
-import {catchError, finalize} from "rxjs/operators";
-
+import {catchError, tap} from 'rxjs/operators';
+import {AppState} from '../../reducers';
+import {select, Store} from '@ngrx/store';
+import {selectLessonsPage} from '../course.selectors';
+import {LessonsPageRequested, PageQuery} from "../courses.actions";
 
 
 export class LessonsDataSource implements DataSource<Lesson> {
 
-    private lessonsSubject = new BehaviorSubject<Lesson[]>([]);
+  private lessonsSubject = new BehaviorSubject<Lesson[]>([]);
 
-    private loadingSubject = new BehaviorSubject<boolean>(false);
+  constructor(private store: Store<AppState>) {
 
-    public loading$ = this.loadingSubject.asObservable();
+  }
 
-    constructor(private coursesService: CoursesService) {
+  loadLessons(courseId:number, page: PageQuery) {
+    this.store
+      .pipe(
+        select(selectLessonsPage(courseId, page)),
+        tap(lessons => {
+          if (lessons.length > 0) {
+            this.lessonsSubject.next(lessons);
+          }
+          else {
+            this.store.dispatch(new LessonsPageRequested({courseId, page}));
+          }
+        }),
+        catchError(() => of([]))
+      )
+      .subscribe();
 
-    }
+  }
 
-    loadLessons(courseId:number,
-                pageIndex:number,
-                pageSize:number) {
+  connect(collectionViewer: CollectionViewer): Observable<Lesson[]> {
+    console.log("Connecting data source");
+    return this.lessonsSubject.asObservable();
+  }
 
-        this.loadingSubject.next(true);
-
-        this.coursesService.findLessons(courseId, pageIndex, pageSize).pipe(
-                catchError(() => of([])),
-                finalize(() => this.loadingSubject.next(false))
-            )
-            .subscribe(lessons => this.lessonsSubject.next(lessons));
-
-    }
-
-    connect(collectionViewer: CollectionViewer): Observable<Lesson[]> {
-        console.log("Connecting data source");
-        return this.lessonsSubject.asObservable();
-    }
-
-    disconnect(collectionViewer: CollectionViewer): void {
-        this.lessonsSubject.complete();
-        this.loadingSubject.complete();
-    }
+  disconnect(collectionViewer: CollectionViewer): void {
+    this.lessonsSubject.complete();
+  }
 
 }
-
