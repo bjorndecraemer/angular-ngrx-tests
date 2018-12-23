@@ -1,17 +1,16 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {Course} from "../model/course";
 import {Observable} from "rxjs";
-import {map} from "rxjs/operators";
-import {CoursesService} from "../services/courses.service";
 import {select, Store} from "@ngrx/store";
 import {AppState} from "../../reducers";
-import {selectAdvancedCourses, selectAllCourses, selectBeginnerCourses, selectPromoTotal} from "../course.selectors";
+import {selectAdvancedCourses, selectBeginnerCourses, selectPromoTotal} from "../course.selectors";
 import {AllCoursesRequested} from "../courses.actions";
 
 @Component({
     selector: 'home',
     templateUrl: './home.component.html',
-    styleUrls: ['./home.component.css']
+    styleUrls: ['./home.component.css'],
+  changeDetection : ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent implements OnInit {
 
